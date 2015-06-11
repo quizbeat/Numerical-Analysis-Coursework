@@ -6,11 +6,7 @@ classdef MonteCarlo
         
         function [x] = randInRange(a,b)
         	% returns random value in range [a,b]
-            n = length(a);
-            x = zeros(1,n);
-            for i = 1:n
-                x(i) = a(i) + (b(i) - a(i)) .* rand();
-            end
+            x = a + (b - a) .* rand();
         end
         
         function [min,max] = findMinMax1Arg(lhs,rhs,x_min,x_max)
@@ -186,12 +182,8 @@ classdef MonteCarlo
             I = MonteCarlo.int3d(f,x_lhs,x_rhs,y_lhs,y_rhs,z_lhs,z_rhs,N);
         end
         
-        function [inArea] = checkPoint(x,G)
-            n = length(x);
-            inArea = 1;
-            for i = 1:n
-                inArea = inArea && G{i}(x);
-            end
+        function [] = checkPoint(x,G)
+            
         end
         
         function [I] = nDimIntegral(f,a,b,G,N)
@@ -206,7 +198,7 @@ classdef MonteCarlo
                 x = MonteCarlo.randInRange(a,b);
                 % check conditions, x must be in [a,b]
                 % inArea = isequal(a<=x,x<=b,ones(1,n)); wrong check
-                inArea = MonteCarlo.checkPoint(x,G);
+                inArea = 
                 % adding f(x)
                 if (inArea)
                     fSum = fSum + f(x);
@@ -235,7 +227,7 @@ classdef MonteCarlo
             b = zeros(1,n);
             a(1) = 0; b(1) = 1;
             a(2) = 0; b(2) = 1;
-            a(3) = 0; b(3) = 40;
+            a(3) = 0; b(3) = 30;
             
             I = MonteCarlo.nDimIntegral(f,a,b,G,N);
         end
