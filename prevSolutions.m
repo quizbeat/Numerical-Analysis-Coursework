@@ -1,12 +1,16 @@
 classdef MonteCarlo
     % Integration by Monte Carlo method
-    % 	
+    %   
     
     methods(Static)
         
         function [x] = randInRange(a,b)
-        	% returns random value in range [a,b]
-            x = a + (b - a) .* rand();
+          % returns random value in range [a,b]
+            n = length(a);
+            x = zeros(1,n);
+            for i = 1:n
+                x(i) = a(i) + (b(i) - a(i)) .* rand();
+            end
         end
         
         function [min,max] = findMinMax1Arg(lhs,rhs,x_min,x_max)
@@ -40,7 +44,7 @@ classdef MonteCarlo
         end
         
         function [I] = int1d(f,x_lhs,x_rhs,N)
-        	% Sf(x)dx = I
+          % Sf(x)dx = I
             % single definite integral with conditions:
             % x_lhs <= x <= x_rhs
             
@@ -54,29 +58,29 @@ classdef MonteCarlo
         end
 
         function [I] = int2d(f,x_lhs,x_rhs,y_lhs,y_rhs,N)
-        	% SSf(x,y)dxdy = I
+          % SSf(x,y)dxdy = I
             % double definite integral with conditions:
             % x_lhs <= x <= x_rhs
             % y_lhs <= y <= y_rhs
             
-        	x_min = x_lhs;
-        	x_max = x_rhs;
+          x_min = x_lhs;
+          x_max = x_rhs;
 
-        	[y_min,y_max] = MonteCarlo.findMinMax1Arg(y_lhs,y_rhs,x_min,x_max);
+          [y_min,y_max] = MonteCarlo.findMinMax1Arg(y_lhs,y_rhs,x_min,x_max);
 
-        	sum = 0;
+          sum = 0;
 
-        	for i = 1:N
-        		x = MonteCarlo.randInRange(x_min,x_max);
-        		y = MonteCarlo.randInRange(y_min,y_max);
-        		if (x_lhs <= x && x <= x_rhs && ...
-        			y_lhs(x) <= y && y <= y_rhs(x))
-        			sum = sum + f(x,y);
-        		end
-        	end
+          for i = 1:N
+            x = MonteCarlo.randInRange(x_min,x_max);
+            y = MonteCarlo.randInRange(y_min,y_max);
+            if (x_lhs <= x && x <= x_rhs && ...
+              y_lhs(x) <= y && y <= y_rhs(x))
+              sum = sum + f(x,y);
+            end
+          end
 
-        	S = (x_max-x_min) * (y_max-y_min);
-        	I = S * sum / N;
+          S = (x_max-x_min) * (y_max-y_min);
+          I = S * sum / N;
         end
         
         function [I] = int3d(f,x_lhs,x_rhs,y_lhs,y_rhs,z_lhs,z_rhs,N)
@@ -96,7 +100,7 @@ classdef MonteCarlo
             sum = 0;
             
             for i = 1:N
-            	% generating vector of random values
+              % generating vector of random values
                 x = MonteCarlo.randInRange(x_min,x_max);
                 y = MonteCarlo.randInRange(y_min,y_max);
                 z = MonteCarlo.randInRange(z_min,z_max);
@@ -113,7 +117,7 @@ classdef MonteCarlo
         end
 
         function [I] = int6d(f,x1_lhs,x1_rhs,y1_lhs,y1_rhs,z1_lhs,z1_rhs,...
-        					   x2_lhs,x2_rhs,y2_lhs,y2_rhs,z2_lhs,z2_rhs,N)
+                     x2_lhs,x2_rhs,y2_lhs,y2_rhs,z2_lhs,z2_rhs,N)
             a = zeros(1,6);
             b = zeros(1,6);
             
@@ -153,22 +157,22 @@ classdef MonteCarlo
             V = 0;
             I = -1 * V;
             
-    	end
+      end
         
         function [I] = test1d(N)
-        	f = @(x) sqrt(7-3.*(sin(x)).^2);
-        	x_lhs = 0;
-        	x_rhs = 8;
-        	I = MonteCarlo.int1d(f,x_lhs,x_rhs,N);
+          f = @(x) sqrt(7-3.*(sin(x)).^2);
+          x_lhs = 0;
+          x_rhs = 8;
+          I = MonteCarlo.int1d(f,x_lhs,x_rhs,N);
         end
 
         function [I] = test2d(N)
-        	f = @(x,y) 1;
-			x_lhs = 0;
-        	x_rhs = 1;
-        	y_lhs = @(x) x;
-        	y_rhs = @(x) x + 1;
-        	I = MonteCarlo.int2d(f,x_lhs,x_rhs,y_lhs,y_rhs,N);
+          f = @(x,y) 1;
+          x_lhs = 0;
+          x_rhs = 1;
+          y_lhs = @(x) x;
+          y_rhs = @(x) x + 1;
+          I = MonteCarlo.int2d(f,x_lhs,x_rhs,y_lhs,y_rhs,N);
         end
         
         function [I] = test3d(N)
@@ -180,56 +184,6 @@ classdef MonteCarlo
             z_lhs = @(x,y) 0;
             z_rhs = @(x,y) 10*(x+3*y);
             I = MonteCarlo.int3d(f,x_lhs,x_rhs,y_lhs,y_rhs,z_lhs,z_rhs,N);
-        end
-        
-        function [] = checkPoint(x,G)
-            
-        end
-        
-        function [I] = nDimIntegral(f,a,b,G,N)
-            % computing definite integral at G area
-            % which no more than n-dimensional parallelepiped
-            % with properties a and b
-            n = length(a); % dimension of random vector x
-            fSum = 0; % sum of computed values f(x)
-            count = 0; % amount of points found in G
-            % generating N random vectors x
-            for i = 1:N
-                x = MonteCarlo.randInRange(a,b);
-                % check conditions, x must be in [a,b]
-                % inArea = isequal(a<=x,x<=b,ones(1,n)); wrong check
-                inArea = 
-                % adding f(x)
-                if (inArea)
-                    fSum = fSum + f(x);
-                    count = count + 1;
-                end
-            end
-            % computing n-dimensional volume of figure
-            V = prod(b - a);
-            % computing integral value
-            I = V * fSum / N;
-        end
-        
-        function [I] = test(N)
-            % 3-dimensional integral
-            % SSS x^2 dxdydz at G area
-            n = 3;
-            f = @(x) x(1)^2;
-            
-            x1Cond = @(x) (0<=x(1) && x(1)<=1);
-            x2Cond = @(x) (0<=x(2) && x(2)<=1-x(1));
-            x3Cond = @(x) (0<=x(3) && x(3)<=10*(x(1)+3*x(2)));
-            
-            G = {x1Cond,x2Cond,x3Cond};
-            
-            a = zeros(1,n);
-            b = zeros(1,n);
-            a(1) = 0; b(1) = 1;
-            a(2) = 0; b(2) = 1;
-            a(3) = 0; b(3) = 30;
-            
-            I = MonteCarlo.nDimIntegral(f,a,b,G,N);
         end
         
     end
