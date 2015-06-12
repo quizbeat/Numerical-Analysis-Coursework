@@ -14,7 +14,7 @@ classdef MonteCarlo
         
         %% checkPoint: Checks, is point x in G area, or not.
         function [inArea] = checkPoint(x,G)
-            n = length(x);
+            n = length(G); % old version: n = length(x) !!!
             inArea = 1;
             for i = 1:n
                 inArea = inArea && G{i}(x);
@@ -50,11 +50,14 @@ classdef MonteCarlo
             I = V * fSum / N;
             
             % computing Sigma
-            sigma = n / N
+            sigma = n / N;
             
             % computing standard deviation
-            sd1 = fSumSquared/n - (fSum/n)^2
-            sd2 = sigma * (1 - sigma)
+            sd1 = fSumSquared/n - (fSum/n)^2;
+            sd2 = sigma * (1 - sigma);
+            
+            disp('dots in G area:');
+            disp(n);
             
             % computing error
             error = V * t_beta * (sigma*sqrt(sd1)/sqrt(n) + ...
@@ -122,7 +125,50 @@ classdef MonteCarlo
 
         %% test6d: computing 6-dimensional definite integral
         function [I] = test6d(N)
-
+            n = 6;
+            
+            % Solving the problem of the 
+            % mutual attraction of two material bodies.
+            
+            gravityConst = 6.67e-11; % gravitational constant
+            m1 = 6e+24; % mass of the Earth
+            m2 = 7.35e+22; % mass of the Moon
+            r = 384467000; % distance between Earth and Moon
+            p1 = 5520; % avg density of Earth
+            p2 = 3346; % avg density of Moon
+            R1 = 6367000; % Earth radius
+            R2 = 1737000; % Moon radius
+            
+            dist = @(x) sqrt((x(1)-x(4))^2 + (x(2)-x(5))^2 + (x(3)-x(6))^2);
+            
+            fx = @(x) (x(1)-x(4))/dist(x)^3;
+            fy = @(x) (x(2)-x(5))/dist(x)^3;
+            fz = @(x) (x(3)-x(6))/dist(x)^3;
+            
+            % conditions of G area
+            x1Cond = @(x) (x(1)^2+x(2)^2+x(3)^2<=R1^2);
+            x2Cond = @(x) (x(4)^2+x(5)^2+x(6)^2<=R2^2);
+            G = {x1Cond,x2Cond};
+            
+            % limitations for every element in x
+            a = zeros(1,n);
+            b = zeros(1,n);
+            a(1) = -R1; b(1) = R1;
+            a(2) = -R1; b(2) = R1;
+            a(3) = -R1; b(3) = R1;
+            a(4) = -R2; b(4) = R2;
+            a(5) = -R2; b(5) = R2;
+            a(6) = -R2; b(6) = R2;
+            
+            Fx = gravityConst * p1 * p2 * MonteCarlo.ndIntegral(fx,a,b,G,N)
+            Fy = gravityConst * p1 * p2 * MonteCarlo.ndIntegral(fy,a,b,G,N)
+            Fz = gravityConst * p1 * p2 * MonteCarlo.ndIntegral(fz,a,b,G,N)
+            
+            I = sqrt(Fx^2 + Fy^2 + Fz^2);
+            
+            F_correct = gravityConst * m1 * m2 / r^2
+            
+            diff = abs(I - F_correct)
         end
         
     end
