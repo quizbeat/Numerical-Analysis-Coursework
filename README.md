@@ -6,4 +6,11 @@
 
 ## Usage
 
-`MonteCarlo.ndIntegral(f,a,b,)`
+`>> MonteCarlo.ndIntegral(f,a,b,G,N)`
+
+where
+
+- f - function;
+- a,b - limitations of n-dimensional parallelipiped, which covers G area;
+- G - conditions of integration area;
+- N - number of experiments.
